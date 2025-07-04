@@ -143,6 +143,8 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
             logger.debug("[DingTalk]receive patpat msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.TEXT:
             logger.debug("[DingTalk]receive text msg: {}".format(cmsg.content))
+        elif cmsg.ctype == ContextType.RICH_TEXT:
+            logger.debug("[DingTalk]receive richText msg: {}".format(cmsg.content))
         else:
             logger.debug("[DingTalk]receive other msg: {}".format(cmsg.content))
         context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=False, msg=cmsg)
@@ -164,6 +166,8 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
             logger.debug("[DingTalk]receive patpat msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.TEXT:
             logger.debug("[DingTalk]receive text msg: {}".format(cmsg.content))
+        elif cmsg.ctype == ContextType.RICH_TEXT:
+            logger.debug("[DingTalk]receive richText msg: {}".format(cmsg.content))
         else:
             logger.debug("[DingTalk]receive other msg: {}".format(cmsg.content))
         context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=True, msg=cmsg)

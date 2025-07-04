@@ -29,7 +29,7 @@ class DifyBot(Bot):
 
     def reply(self, query, context: Context=None):
         # acquire reply content
-        if context.type == ContextType.TEXT or context.type == ContextType.IMAGE_CREATE:
+        if context.type == ContextType.TEXT or context.type == ContextType.IMAGE_CREATE or context.type == ContextType.RICH_TEXT:
             if context.type == ContextType.IMAGE_CREATE:
                 query = conf().get('image_create_prefix', ['画'])[0] + query
             
@@ -353,17 +353,27 @@ class DifyBot(Bot):
         return reply, None
 
     def _get_upload_files(self, session: DifySession, context: Context):
-        session_id = session.get_session_id()
-        img_cache = memory.USER_IMAGE_CACHE.get(session_id)
-        if not img_cache or not self._get_dify_conf(context, "image_recognition", False):
+        path = None
+        msg = None
+        if context.type == ContextType.RICH_TEXT:
+            if self._get_dify_conf(context, "image_recognition", False) and context.get("msg") and getattr(context['msg'], 'image_path', None):
+                path = context['msg'].image_path
+                msg = context['msg']
+        else:
+            session_id = session.get_session_id()
+            img_cache = memory.USER_IMAGE_CACHE.get(session_id)
+            if img_cache and self._get_dify_conf(context, "image_recognition", False):
+                # 清理图片缓存
+                memory.USER_IMAGE_CACHE[session_id] = None
+                path = img_cache.get("path")
+                msg = img_cache.get("msg")
+
+        if not path:
             return None
-        # 清理图片缓存
-        memory.USER_IMAGE_CACHE[session_id] = None
+
         api_key = self._get_dify_conf(context, "dify_api_key", '')
         api_base = self._get_dify_conf(context, "dify_api_base", "https://api.dify.ai/v1")
         dify_client = DifyClient(api_key, api_base)
-        msg = img_cache.get("msg")
-        path = img_cache.get("path")
         msg.prepare()
 
         with open(path, 'rb') as file:
@@ -377,7 +387,7 @@ class DifyBot(Bot):
         if response.status_code != 200 and response.status_code != 201:
             error_info = f"[DIFY] response text={response.text} status_code={response.status_code} when upload file"
             logger.warning(error_info)
-            return None, error_info
+            return None
         # {
         #     'id': 'f508165a-10dc-4256-a7be-480301e630e6',
         #     'name': '0.png',

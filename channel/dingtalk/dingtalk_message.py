@@ -22,6 +22,7 @@ class DingTalkMessage(ChatMessage):
         self.create_time = event.create_at
         self.image_content = event.image_content
         self.rich_text_content = event.rich_text_content
+        self.image_path = None
         if event.conversation_type == "1":
             self.is_group = False
         else:
@@ -35,9 +36,9 @@ class DingTalkMessage(ChatMessage):
             # 钉钉支持直接识别语音，所以此处将直接提取文字，当文字处理
             self.content = event.extensions['content']['recognition'].strip()
             self.ctype = ContextType.TEXT
-        elif (self.message_type == 'picture') or (self.message_type == 'richText'):
+        elif (self.message_type == 'picture'):
             self.ctype = ContextType.IMAGE
-            # 钉钉图片类型或富文本类型消息处理
+            # 钉钉图片类型消息处理
             image_list = event.get_image_list()
             if len(image_list) > 0:
                 download_code = image_list[0]
@@ -45,6 +46,24 @@ class DingTalkMessage(ChatMessage):
                 self.content = download_image_file(download_url, TmpDir().path())
             else:
                 logger.debug(f"[Dingtalk] messageType :{self.message_type} , imageList isEmpty")
+        elif (self.message_type == 'richText'):
+            self.ctype = ContextType.RICH_TEXT
+            # 钉钉富文本类型消息处理
+            text_content = ""
+            image_path = None
+            if self.rich_text_content and self.rich_text_content.rich_text_list:
+                logger.debug(f"[Dingtalk] richTextContent :{self.rich_text_content}")
+                for item in self.rich_text_content.rich_text_list:
+                    if "text" in item:
+                        text_content += item.get("text", "")
+                    elif item.get("type") == "picture" and image_path is None:
+                        # 目前只处理第一个图片
+                        download_code = item.get("downloadCode")
+                        if download_code:
+                            download_url = self.image_download_handler.get_image_download_url(download_code)
+                            image_path = download_image_file(download_url, TmpDir().path())
+            self.content = text_content.strip()
+            self.image_path = image_path
 
         if self.is_group:
             self.from_user_id = event.conversation_id
