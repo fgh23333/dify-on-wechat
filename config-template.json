@@ -2,7 +2,7 @@
   "dify_api_base": "https://api.dify.ai/v1",
   "dify_api_key": "app-xxx",
   "dify_app_type": "chatbot",
-  "channel_type": "gewechat",
+  "channel_type": "dingtalk",
   "gewechat_app_id": "",
   "gewechat_token": "",
   "gewechat_base_url": "",
@@ -10,13 +10,22 @@
   "gewechat_download_url": "",
   "debug": true,
   "model": "dify",
-  "single_chat_prefix": [""],
+  "single_chat_prefix": [
+    ""
+  ],
   "single_chat_reply_prefix": "",
-  "group_chat_prefix": ["@bot"],
-  "group_name_white_list": ["ALL_GROUP"],
+  "group_chat_prefix": [
+    "@bot"
+  ],
+  "group_name_white_list": [
+    "ALL_GROUP"
+  ],
   "image_recognition": true,
   "speech_recognition": true,
   "voice_reply_voice": true,
   "voice_to_text": "dify",
-  "text_to_voice": "dify"
+  "text_to_voice": "dify",
+  "dingtalk_client_id": "",
+  "dingtalk_client_secret": "",
+  "dingtalk_card_enabled": false
 }
